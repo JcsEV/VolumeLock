@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- activity_main.xml -->
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/voice">
+
+        <Button
+                android:layout_width="wrap_content"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_height="wrap_content"
+                android:text="锁定音量"
+                android:id="@+id/activitymainVoice"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toBottomOf="@+id/voiceView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_bias="0.408"
+                app:layout_constraintStart_toEndOf="@+id/activitymainButton"
+                app:layout_constraintHorizontal_bias="0.569"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.495" android:id="@+id/textView"
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="200dp"
+                android:text="音量锁，再也不用担心接不到电话了！"/>
+        <Button
+                android:layout_width="wrap_content"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_height="wrap_content"
+                android:text="设置音量"
+                android:id="@+id/activitymainButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toBottomOf="@+id/voiceView"
+                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.216"
+                app:layout_constraintVertical_bias="0.408"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/voiceView"
+                app:layout_constraintTop_toBottomOf="@+id/textView"
+                android:layout_marginTop="16dp" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" android:text="当前音量：000"
+                app:layout_constraintHorizontal_bias="0.498"/>
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/editVoice"
+                app:layout_constraintTop_toBottomOf="@+id/voiceView"
+                android:layout_marginTop="32dp" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/textVoice"
+                app:layout_constraintTop_toBottomOf="@+id/voiceView" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="76dp"
+                app:layout_constraintHorizontal_bias="0.498"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
