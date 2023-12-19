@@ -35,5 +35,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name:  ok
-          path: app/build/outputs/apk/debug/*.apk
+          path: app/release/*.apk
     #这里的 path 路径是来自于 find apk 那一步的结果
