@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">VolumeLock</string>
+    <string name="VoiceLabel">输入一个介于 %s - %s 原始音量值</string>
+    <string name="VoiceNow">当前音量：%s</string>
+    <string name="VoiceLocked">解锁音量</string>
+    <string name="VoiceUnlock">锁定音量</string>
 </resources>

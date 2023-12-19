@@ -1,84 +1,104 @@
 package me.voice.lock;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import android.app.Activity;
-import android.view.KeyEvent;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.media.AudioManager;
 import android.content.Context;
 import android.content.Intent;
-import android.view.Window;
 import android.widget.Button;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends Activity {
-    public AudioManager am;
-    private boolean volumeLock = false;
-    private int originVolume = 0;
-    private int maxVolume = 0;
-    TextView vV;
-    //需要点击次数满足才会退出
-    @SuppressLint("SetTextI18n")
+    boolean isRefuse;
+    boolean volumeLock = false;
+    int originVolume = 0;
+    int maxVolume = 0;
+    int setVolume = 0;
+    @SuppressLint({"SetTextI18n", "StringFormatMatches"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 先判断有没有权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !isRefuse) {// android 11  且 不是已经被拒绝
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, 1024);
+            }
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, 1);
+        }
         //去掉标题栏
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         //防止重新加载
         if (!this.isTaskRoot()) {
             Intent mainIntent = getIntent();
             String action = mainIntent.getAction();
             if (mainIntent.hasCategory(Intent.CATEGORY_LAUNCHER) && action.equals(Intent.ACTION_MAIN)) {
-                finish();return;
+                finish();
+                return;
             }}
         //获取音频服务
-        am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
         originVolume = am.getStreamVolume(AudioManager.STREAM_RING);
         maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_RING);
-        vV = findViewById(R.id.voiceView);
-
         TextView tV = findViewById(R.id.textVoice);
-        tV.setText("输入一个介于 " + am.getStreamMinVolume(AudioManager.STREAM_RING) + " - " + maxVolume + " 原始音量值");
+        TextView vV = findViewById(R.id.voiceView);
         EditText eV = findViewById(R.id.editVoice);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            tV.setText(String.format(this.getString(R.string.VoiceLabel), am.getStreamMinVolume(AudioManager.STREAM_RING), maxVolume));
+        }
         //启动线程循环设置音量
         new Thread(() -> {
             //这儿是耗时操作，完成之后更新UI；
             while(true){
-                final int m = volumeLock ? maxVolume : originVolume;
+                setVolume = volumeLock ? maxVolume : originVolume;
                 runOnUiThread(() -> {
+                    am.setStreamVolume(AudioManager.STREAM_RING, setVolume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                     //更新UI
-                    am.setStreamVolume(AudioManager.STREAM_RING, m, AudioManager.FLAG_PLAY_SOUND);
-                    vV.setText("当前音量：" + am.getStreamVolume(AudioManager.STREAM_RING));
+                    vV.setText(String.format(this.getString(R.string.VoiceNow), setVolume));
                 });
-
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException ignored) {}
             }
         }).start();
-        final Button bt = findViewById(R.id.activitymainButton);
-        bt.setOnClickListener(p1 -> {
-            if (!eV.getText().toString().equals("")){
-                originVolume = Integer.parseInt(eV.getText().toString());
+        Button bt = findViewById(R.id.ButtonSetting);
+        bt.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                String StrOrigin = eV.getText().toString();
+                if (!StrOrigin.equals("")){
+                    originVolume = Integer.parseInt(StrOrigin);
+                }
+                eV.setText("");
             }
-            eV.setText("");
         });
-        final Button vi = findViewById(R.id.activitymainVoice);
-        vi.setOnClickListener(p1 -> {
-            volumeLock = !volumeLock;
-            if(volumeLock){
-                vi.setText("解锁音量");
-            }
-            else{
-                vi.setText("锁定音量");
+        Button vi = findViewById(R.id.ButtonLock);
+        vi.setOnClickListener(new View.OnClickListener(){
+             public void onClick(View v) {
+                volumeLock = !volumeLock;
+                if (volumeLock) {
+                    vi.setText(R.string.VoiceLocked);
+                } else {
+                    vi.setText(R.string.VoiceUnlock);
+                }
             }
         });
     }
@@ -88,6 +108,25 @@ public class MainActivity extends Activity {
         super.onRestart();
     }
 
+    // 带回授权结果
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1024 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // 检查是否有权限
+            isRefuse = !Environment.isExternalStorageManager();
+        }
+    }
+//    public static void saveLog(String data){
+//        String path = Environment.getExternalStorageState() + "/voice.txt";
+//        try {
+//            FileOutputStream fos = new FileOutputStream(path);
+//            fos.write(data.getBytes());
+//            fos.flush();
+//            fos.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
 
 

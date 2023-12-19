@@ -16,11 +16,11 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_height="wrap_content"
                 android:text="锁定音量"
-                android:id="@+id/activitymainVoice"
+                android:id="@+id/ButtonLock"
                 app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toBottomOf="@+id/voiceView"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintVertical_bias="0.408"
-                app:layout_constraintStart_toEndOf="@+id/activitymainButton"
+                app:layout_constraintStart_toEndOf="@+id/ButtonSetting"
                 app:layout_constraintHorizontal_bias="0.569"/>
         <TextView
                 android:layout_width="wrap_content"
@@ -35,7 +35,7 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_height="wrap_content"
                 android:text="设置音量"
-                android:id="@+id/activitymainButton"
+                android:id="@+id/ButtonSetting"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toBottomOf="@+id/voiceView"
                 app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.216"
