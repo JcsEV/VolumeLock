@@ -3,6 +3,7 @@ package me.voice.lock;
 import android.Manifest;
 import android.annotation.SuppressLint;
 
+import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,26 +19,31 @@ import android.media.AudioManager;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.Button;
+import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 public class MainActivity extends Activity {
-    boolean isRefuse;
+    boolean fileAllow = false;
     boolean volumeLock = false;
     int originVolume = 0;
-    int maxVolume = 0;
     int setVolume = 0;
     @SuppressLint({"SetTextI18n", "StringFormatMatches"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 先判断有没有权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !isRefuse) {// android 11  且 不是已经被拒绝
+//        Toast.makeText(this,"open", Toast.LENGTH_SHORT).show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !fileAllow) {// android 11  且 不是已经被拒绝
             if (!Environment.isExternalStorageManager()) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.setData(Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, 1024);
+                startActivityForResult(intent, ConstValue.fileCode);
             }
+        }
+        if (!((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).isNotificationPolicyAccessGranted()) {
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            this.startActivity(intent);
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
@@ -58,13 +64,13 @@ public class MainActivity extends Activity {
         //获取音频服务
         AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
         originVolume = am.getStreamVolume(AudioManager.STREAM_RING);
-        maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_RING);
+        int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_RING);
+        int minVolume = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P
+                ? am.getStreamMinVolume(AudioManager.STREAM_RING) : 0;
         TextView tV = findViewById(R.id.textVoice);
         TextView vV = findViewById(R.id.voiceView);
         EditText eV = findViewById(R.id.editVoice);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            tV.setText(String.format(this.getString(R.string.VoiceLabel), am.getStreamMinVolume(AudioManager.STREAM_RING), maxVolume));
-        }
+        tV.setText(String.format(this.getString(R.string.VoiceLabel), minVolume, maxVolume));
         //启动线程循环设置音量
         new Thread(() -> {
             //这儿是耗时操作，完成之后更新UI；
@@ -111,9 +117,9 @@ public class MainActivity extends Activity {
     // 带回授权结果
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1024 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (requestCode == ConstValue.fileCode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // 检查是否有权限
-            isRefuse = !Environment.isExternalStorageManager();
+            fileAllow = !Environment.isExternalStorageManager();
         }
     }
 //    public static void saveLog(String data){
